@@ -1,125 +1,82 @@
-import datetime
-from uteis import limpar_tela, pausa, aguardar_enter
-from armazenamento import carregar_json, salvar_json
+from database import conectar, mover_para_lixeira
+from uteis import limpar_tela, pausa
 
-# ---------------- ARQUIVO DE DADOS ----------------
-POLICIAIS_FILE = "data/policiais.json"
-policiais = []
+def menu_policiais():
+    while True:
+        limpar_tela()
+        print("=== POLICIAIS ===")
+        print("1. Cadastrar")
+        print("2. Listar")
+        print("3. Apagar")
+        print("0. Voltar")
 
-# ---------------- CARREGAR E SALVAR ----------------
-def carregar_policiais():
-    global policiais
-    policiais = carregar_json(POLICIAIS_FILE)
+        opc = input("Opção: ")
 
-def salvar_policiais():
-    salvar_json(POLICIAIS_FILE, policiais)
+        if opc == "1":
+            cadastrar()
+        elif opc == "2":
+            listar()
+        elif opc == "3":
+            apagar()
+        elif opc == "0":
+            break
+        else:
+            pausa(1)
 
-# ---------------- VALIDAÇÕES ----------------
-def validar_nome_guerra(nome):
-    nome = nome.strip()
-    if not nome:
-        return False
-    return all(c.isalnum() or c.isspace() for c in nome)
 
-def validar_telefone(telefone):
-    return telefone.isdigit() and len(telefone) == 11
-
-def validar_matricula(matricula):
-    return bool(matricula.strip())
-
-# ---------------- CADASTRO DE POLICIAL ----------------
-def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None, batalhao=None, patente=None):
-    global policiais
+def cadastrar():
     limpar_tela()
-    print("=== CADASTRO DE POLICIAL (PM) ===")
+    nome = input("Nome: ").strip()
+    matricula = input("Matrícula: ").strip()
 
-    # Lista de patentes
-    patentes = [
-        "Soldado", "Cabo", "Terceiro-Sargento", "Segundo-Sargento",
-        "Primeiro-Sargento", "Subtenente", "Aspirante", "Tenente",
-        "Capitão", "Major", "Tenente-Coronel", "Coronel"
-    ]
+    con = conectar()
+    cur = con.cursor()
 
-    if not patente:
-        print("Escolha a patente do policial:")
-        for i, p in enumerate(patentes, 1):
-            print(f"{i}. {p}")
-        while True:
-            try:
-                opc = int(input("Opção: ").strip())
-                if 1 <= opc <= len(patentes):
-                    patente = patentes[opc - 1]
-                    break
-                print("Opção inválida!")
-            except ValueError:
-                print("Digite apenas números.")
+    try:
+        cur.execute("INSERT INTO policiais (nome, matricula) VALUES (?, ?)", (nome, matricula))
+        con.commit()
+        print("Policial cadastrado!")
+    except:
+        print("Erro: matrícula já cadastrada!")
+    finally:
+        con.close()
 
-    # Nome de guerra
-    if not nome:
-        while True:
-            nome = input("Nome de guerra: ").strip()
-            if validar_nome_guerra(nome):
-                break
-            print("Nome inválido! Não pode estar vazio ou ter símbolos.")
+    pausa(2)
 
-    # Matrícula
-    if not matricula:
-        while True:
-            matricula = input("Matrícula: ").strip()
-            if validar_matricula(matricula):
-                break
-            print("Matrícula inválida!")
 
-    # Telefone
-    if not telefone:
-        while True:
-            telefone = input("Telefone (DDD + número, 11 dígitos): ").strip()
-            if validar_telefone(telefone):
-                break
-            print("Telefone inválido! Digite 11 números.")
-
-    # Companhia e batalhão
-    if not companhia:
-        companhia = input("Companhia: ").strip()
-    if not batalhao:
-        batalhao = input("Batalhão: ").strip()
-
-    # Gerando ID automático
-    novo_id = max([p['id'] for p in policiais], default=0) + 1
-
-    novo = {
-        "id": novo_id,
-        "patente": patente,
-        "nome_guerra": nome,
-        "matricula": matricula,
-        "telefone": telefone,
-        "companhia": companhia,
-        "batalhao": batalhao,
-        "data_cadastro": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    }
-
-    policiais.append(novo)
-    salvar_policiais()
-
-    print(f"Policial '{nome}' cadastrado com sucesso!")
-    aguardar_enter()
-
-# ---------------- LISTAGEM DE POLICIAIS ----------------
-def listar_policiais():
+def listar():
     limpar_tela()
-    
-    if not policiais:
-        print("Nenhum policial cadastrado.")
-        aguardar_enter()
+    con = conectar()
+    cur = con.cursor()
+    cur.execute("SELECT id, nome, matricula FROM policiais")
+
+    for row in cur.fetchall():
+        print(row)
+
+    con.close()
+    pausa(3)
+
+
+def apagar():
+    listar()
+    pid = input("ID para apagar: ").strip()
+
+    con = conectar()
+    cur = con.cursor()
+
+    cur.execute("SELECT * FROM policiais WHERE id=?", (pid,))
+    dados = cur.fetchone()
+
+    if not dados:
+        print("ID não encontrado!")
+        pausa(2)
         return
-    
-    print(f"{'ID':<3} {'Patente':<15} {'Nome Guerra':<20} {'Matrícula':<10} {'Telefone':<12} {'Cia':<10} {'Batalhão'}")
-    print("-" * 90)
-    
-    for p in policiais:
-        print(
-            f"{p['id']:<3} {p['patente']:<15} {p['nome_guerra']:<20} "
-            f"{p['matricula']:<10} {p['telefone']:<12} {p['companhia']:<10} {p['batalhao']}"
-        )
-    
-    aguardar_enter()
+
+    mover_para_lixeira("policiais", dados)
+
+    cur.execute("DELETE FROM policiais WHERE id=?", (pid,))
+    con.commit()
+    con.close()
+
+    print("Movido para a lixeira.")
+    pausa(2)
