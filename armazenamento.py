@@ -1,93 +1,181 @@
 # ------------------------------
-# MÓDULO: armazenamento.py
-# Finalidade: Gerenciar leitura, gravação e carregamento global dos dados do sistema
+# MÓDULO: armazenamento.py (versão SQL)
+# Finalidade: Gerenciar leitura, gravação e CRUD global dos dados via SQLite
 # ------------------------------
 
+import sqlite3
 import os
-import json
 import datetime
 
 # ------------------------------
-# CONFIGURAÇÃO DE DIRETÓRIOS E ARQUIVOS
+# CONFIGURAÇÃO DO BANCO
 # ------------------------------
 DATA_DIR = "data"
-ARQUIVO_USUARIOS = f"{DATA_DIR}/usuarios.json"
-ARQUIVO_ESTOQUE = f"{DATA_DIR}/estoque.json"
-ARQUIVO_COLABORADORES = f"{DATA_DIR}/colaboradores.json"
-ARQUIVO_LIXEIRA = f"{DATA_DIR}/lixeira.json"
-ARQUIVO_VIATURAS = f"{DATA_DIR}/viaturas.json"
+DB_NAME = f"{DATA_DIR}/sistema.db"
 
-# Garante que o diretório de dados exista
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
-# ------------------------------
-# FUNÇÕES BÁSICAS DE JSON
-# ------------------------------
-def salvar_json(arquivo, dados):
-    """Salva dados em formato JSON, com indentação e suporte a acentuação."""
-    try:
-        with open(arquivo, "w", encoding="utf-8") as f:
-            json.dump(dados, f, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"[ERRO] Falha ao salvar {arquivo}: {e}")
-
-
-def carregar_json(arquivo):
-    """Carrega dados JSON. Retorna lista vazia se o arquivo não existir ou estiver corrompido."""
-    if os.path.exists(arquivo):
-        try:
-            with open(arquivo, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            print(f"[AVISO] O arquivo '{arquivo}' está corrompido. Foi restaurado como lista vazia.")
-            return []
-        except Exception as e:
-            print(f"[ERRO] Falha ao ler {arquivo}: {e}")
-            return []
-    return []
+def conectar():
+    """Abre conexão com o banco SQLite."""
+    return sqlite3.connect(DB_NAME)
 
 
 # ------------------------------
-# FUNÇÕES DE SALVAMENTO E CARREGAMENTO GLOBAL
+# CRIAÇÃO DAS TABELAS
 # ------------------------------
-def carregar_dados():
-    """Carrega todos os conjuntos de dados do sistema e retorna em um dicionário."""
-    dados = {
-        "usuarios": carregar_json(ARQUIVO_USUARIOS),
-        "estoque": carregar_json(ARQUIVO_ESTOQUE),
-        "colaboradores": carregar_json(ARQUIVO_COLABORADORES),
-        "lixeira": carregar_json(ARQUIVO_LIXEIRA),
-        "viaturas": carregar_json(ARQUIVO_VIATURAS),
-    }
+def inicializar_banco():
+    conn = conectar()
+    cursor = conn.cursor()
 
-    # Identificadores automáticos
-    dados["proximo_id_item"] = max([i["id"] for i in dados["estoque"]], default=0) + 1
-    dados["proximo_id_colaborador"] = max([c["id"] for c in dados["colaboradores"]], default=0) + 1
-    dados["proximo_id_viatura"] = max([v["id"] for v in dados["viaturas"]], default=0) + 1
+    # Usuários / Administradores / Policiais (tudo cabe aqui)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            login TEXT UNIQUE,
+            senha TEXT,
+            telefone TEXT,
+            matricula TEXT,
+            patente TEXT,
+            companhia TEXT,
+            batalhao TEXT,
+            data_cadastro TEXT
+        );
+    """)
 
-    return dados
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS estoque (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            quantidade INTEGER,
+            descricao TEXT
+        );
+    """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS colaboradores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            funcao TEXT,
+            matricula TEXT
+        );
+    """)
 
-def salvar_dados(dados):
-    """Salva todos os conjuntos de dados do sistema."""
-    salvar_json(ARQUIVO_USUARIOS, dados.get("usuarios", []))
-    salvar_json(ARQUIVO_ESTOQUE, dados.get("estoque", []))
-    salvar_json(ARQUIVO_COLABORADORES, dados.get("colaboradores", []))
-    salvar_json(ARQUIVO_LIXEIRA, dados.get("lixeira", []))
-    salvar_json(ARQUIVO_VIATURAS, dados.get("viaturas", []))
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lixeira (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            origem TEXT,
+            dado TEXT,
+            data_exclusao TEXT
+        );
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS viaturas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            prefixo TEXT,
+            placa TEXT,
+            modelo TEXT,
+            tipo TEXT,
+            km_atual INTEGER,
+            os_prime TEXT,
+            data_cadastro TEXT
+        );
+    """)
+
+    conn.commit()
+    conn.close()
 
 
 # ------------------------------
-# (Opcional) UTILITÁRIO DE BACKUP
+# CRUD GENÉRICO
+# ------------------------------
+def inserir(tabela, dados: dict):
+    """Insere um registro em qualquer tabela."""
+    conn = conectar()
+    cursor = conn.cursor()
+
+    colunas = ", ".join(dados.keys())
+    valores = ", ".join(["?" for _ in dados])
+
+    cursor.execute(
+        f"INSERT INTO {tabela} ({colunas}) VALUES ({valores})",
+        list(dados.values())
+    )
+
+    conn.commit()
+    ultimo_id = cursor.lastrowid
+    conn.close()
+    return ultimo_id
+
+
+def listar(tabela):
+    """Retorna todos os registros de uma tabela."""
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(f"SELECT * FROM {tabela}")
+    registros = cursor.fetchall()
+
+    conn.close()
+    return registros
+
+
+def buscar_por_id(tabela, id_registro):
+    """Busca um único registro pelo ID."""
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(f"SELECT * FROM {tabela} WHERE id=?", (id_registro,))
+    registro = cursor.fetchone()
+
+    conn.close()
+    return registro
+
+
+def atualizar(tabela, id_registro, dados: dict):
+    """Atualiza um registro com base no ID."""
+    conn = conectar()
+    cursor = conn.cursor()
+
+    set_clause = ", ".join([f"{k}=?" for k in dados])
+    valores = list(dados.values()) + [id_registro]
+
+    cursor.execute(
+        f"UPDATE {tabela} SET {set_clause} WHERE id=?",
+        valores
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def deletar(tabela, id_registro):
+    """Remove registro da tabela."""
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute(f"DELETE FROM {tabela} WHERE id=?", (id_registro,))
+    conn.commit()
+    conn.close()
+
+
+# ------------------------------
+# BACKUP DO BANCO
 # ------------------------------
 def criar_backup():
-    """Cria uma cópia completa da pasta 'data' com data e hora no nome."""
+    """Cria backup completo do arquivo do banco."""
     try:
-        import shutil
         data_agora = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        destino = f"backup_{data_agora}"
-        shutil.copytree(DATA_DIR, destino)
-        print(f"[OK] Backup criado em '{destino}'")
+        destino = f"backup_{data_agora}.db"
+
+        if os.path.exists(DB_NAME):
+            with open(DB_NAME, "rb") as fsrc:
+                with open(destino, "wb") as fdst:
+                    fdst.write(fsrc.read())
+
+        print(f"[OK] Backup criado: {destino}")
+
     except Exception as e:
-        print(f"[ERRO] Falha ao criar backup: {e}")
+        print(f"[ERRO] Falha no backup: {e}")

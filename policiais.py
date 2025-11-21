@@ -1,6 +1,6 @@
 import datetime
 from uteis import limpar_tela, pausa, aguardar_enter
-from armazenamento import salvar_json, carregar_json
+from armazenamento import carregar_json, salvar_json
 
 # ---------------- ARQUIVO DE DADOS ----------------
 POLICIAIS_FILE = "data/policiais.json"
@@ -16,10 +16,13 @@ def salvar_policiais():
 
 # ---------------- VALIDAÇÕES ----------------
 def validar_nome_guerra(nome):
-    return bool(nome.strip()) and all(c.isalnum() or c.isspace() for c in nome)
+    nome = nome.strip()
+    if not nome:
+        return False
+    return all(c.isalnum() or c.isspace() for c in nome)
 
 def validar_telefone(telefone):
-    return telefone.isdigit() and len(telefone) == 11  # DDD + 9 dígitos
+    return telefone.isdigit() and len(telefone) == 11
 
 def validar_matricula(matricula):
     return bool(matricula.strip())
@@ -30,10 +33,12 @@ def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None,
     limpar_tela()
     print("=== CADASTRO DE POLICIAL (PM) ===")
 
-    # Patentes
-    patentes = ["Soldado", "Cabo", "Terceiro-Sargento", "Segundo-Sargento",
-                "Primeiro-Sargento", "Subtenente", "Aspirante", "Tenente",
-                "Capitão", "Major", "Tenente-Coronel", "Coronel"]
+    # Lista de patentes
+    patentes = [
+        "Soldado", "Cabo", "Terceiro-Sargento", "Segundo-Sargento",
+        "Primeiro-Sargento", "Subtenente", "Aspirante", "Tenente",
+        "Capitão", "Major", "Tenente-Coronel", "Coronel"
+    ]
 
     if not patente:
         print("Escolha a patente do policial:")
@@ -55,7 +60,7 @@ def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None,
             nome = input("Nome de guerra: ").strip()
             if validar_nome_guerra(nome):
                 break
-            print("Nome inválido! Não pode estar vazio ou conter símbolos especiais.")
+            print("Nome inválido! Não pode estar vazio ou ter símbolos.")
 
     # Matrícula
     if not matricula:
@@ -71,7 +76,7 @@ def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None,
             telefone = input("Telefone (DDD + número, 11 dígitos): ").strip()
             if validar_telefone(telefone):
                 break
-            print("Telefone inválido! Digite 11 números sem espaços ou símbolos.")
+            print("Telefone inválido! Digite 11 números.")
 
     # Companhia e batalhão
     if not companhia:
@@ -79,8 +84,9 @@ def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None,
     if not batalhao:
         batalhao = input("Batalhão: ").strip()
 
-    # ID automático
+    # Gerando ID automático
     novo_id = max([p['id'] for p in policiais], default=0) + 1
+
     novo = {
         "id": novo_id,
         "patente": patente,
@@ -94,19 +100,26 @@ def cadastrar_policial(nome=None, matricula=None, telefone=None, companhia=None,
 
     policiais.append(novo)
     salvar_policiais()
+
     print(f"Policial '{nome}' cadastrado com sucesso!")
     aguardar_enter()
 
 # ---------------- LISTAGEM DE POLICIAIS ----------------
 def listar_policiais():
     limpar_tela()
+    
     if not policiais:
         print("Nenhum policial cadastrado.")
         aguardar_enter()
         return
     
-    print(f"{'ID':<3} {'Patente':<15} {'Nome Guerra':<20} {'Matrícula':<10} {'Telefone':<12} {'Companhia':<10} {'Batalhão'}")
-    print("-"*90)
+    print(f"{'ID':<3} {'Patente':<15} {'Nome Guerra':<20} {'Matrícula':<10} {'Telefone':<12} {'Cia':<10} {'Batalhão'}")
+    print("-" * 90)
+    
     for p in policiais:
-        print(f"{p['id']:<3} {p['patente']:<15} {p['nome_guerra']:<20} {p['matricula']:<10} {p['telefone']:<12} {p['companhia']:<10} {p['batalhao']}")
+        print(
+            f"{p['id']:<3} {p['patente']:<15} {p['nome_guerra']:<20} "
+            f"{p['matricula']:<10} {p['telefone']:<12} {p['companhia']:<10} {p['batalhao']}"
+        )
+    
     aguardar_enter()
