@@ -5,6 +5,27 @@ from policiais import menu_policiais
 from administradores import menu_admins
 from database import criar_backup_automatico
 
+def menu_inicial():
+    while True:
+        limpar_tela()
+        print("=== SISTEMA ROTAM ===")
+        print("1. Cadastrar Administrador")
+        print("2. Login")
+        print("0. Sair")
+
+        opc = input("Opção: ").strip()
+
+        if opc == "1":
+            cadastrar_administrador()
+        elif opc == "2":
+            if login():
+                menu_principal()
+        elif opc == "0":
+            break
+        else:
+            print("Opção inválida!")
+            pausa(1)
+
 def menu_principal():
     while True:
         limpar_tela()
@@ -26,28 +47,6 @@ def menu_principal():
             criar_backup_automatico()
             print("Saindo...")
             pausa(1)
-            break
-        else:
-            print("Opção inválida!")
-            pausa(1)
-
-
-def menu_inicial():
-    while True:
-        limpar_tela()
-        print("=== SISTEMA ROTAM ===")
-        print("1. Cadastrar Administrador")
-        print("2. Login")
-        print("0. Sair")
-
-        opc = input("Opção: ").strip()
-
-        if opc == "1":
-            cadastrar_administrador()
-        elif opc == "2":
-            if login():
-                menu_principal()
-        elif opc == "0":
             break
         else:
             print("Opção inválida!")
