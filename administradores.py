@@ -61,7 +61,24 @@ def login():
 
 
 def menu_admins():
-    limpar_tela()
-    print("=== ADMINISTRADORES ===")
-    print("Funções futuras serão adicionadas aqui.")
-    pausa(2)
+    while True:
+        limpar_tela()
+        print("=== MENU ADMINISTRADOR ===")
+        print("1. Relatorios.")
+        print("2. Restaurar Sistema")
+        print("3. Restart Sistema.")
+        print("4. Lixeira")
+        print("0. Sair")
+
+        opc = input("Opção: ").strip()
+
+        if opc == "1":
+            print("Em desenvolvimento!")
+        elif opc == "2":
+            print("Em desenvolvimento!")
+        elif opc == "3":
+            print("Em desenvolvimento!")
+        elif opc == "0":
+            break
+        else:
+            pausa(1)
