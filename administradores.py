@@ -1,4 +1,4 @@
-from database import conectar
+from database import conectar, menu_lixeira, restaurar_sistema
 from uteis import pausa, limpar_tela
 
 def cadastrar_administrador():
@@ -75,9 +75,11 @@ def menu_admins():
         if opc == "1":
             print("Em desenvolvimento!")
         elif opc == "2":
-            print("Em desenvolvimento!")
+            restaurar_sistema
         elif opc == "3":
             print("Em desenvolvimento!")
+        elif opc == "4":
+            menu_lixeira()
         elif opc == "0":
             break
         else:

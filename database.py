@@ -2,6 +2,7 @@ import sqlite3
 import shutil
 import os
 from datetime import datetime
+from uteis import limpar_tela, pausa
 
 DB_PATH = "data/rotam.db"
 BACKUP_DIR = "data/backups"
@@ -92,3 +93,30 @@ def criar_backup_automatico():
     if os.path.exists(DB_PATH):
         backup_path = os.path.join(BACKUP_DIR, "backup_rotam.db")
         shutil.copy(DB_PATH, backup_path)
+        
+def menu_lixeira():
+    while True:
+        limpar_tela()
+        print("=== MENU LIXEIRA ===")
+        print("1. Mostra lixeira")
+        print("2. Mover para lixeira")
+        print("3. Restaurar itens da lixeira")
+        print("4. Apagar itens da lixeira permanentemente.")
+        print("0. Sair")
+
+        opc = input("Opção: ").strip()
+
+        if opc == "1":
+            print("Em desenvolvimento!")
+        elif opc == "2":
+            mover_para_lixeira()
+        elif opc == "3":
+            restaurar_lixeira()
+        elif opc == "4":
+            apagar_lixeira()
+        elif opc == "0":
+            pausa(1)
+            break
+        else:
+            print("Opção inválida!")
+            pausa(1)
