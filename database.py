@@ -1,5 +1,6 @@
 import sqlite3
 import shutil
+import json
 import os
 from datetime import datetime
 from uteis import limpar_tela, pausa
@@ -62,17 +63,48 @@ def mover_para_lixeira(tabela, dados):
     con = conectar()
     cur = con.cursor()
     cur.execute("INSERT INTO lixeira (tabela, dados, data) VALUES (?, ?, ?)",
-                (tabela, str(dados), datetime.now().isoformat()))
+                (tabela, json.dumps(dados), datetime.now().isoformat()))
     con.commit()
     con.close()
 
-
-def restaurar_lixeira():
+def restaurar_item_lixeira():
     con = conectar()
     cur = con.cursor()
-    cur.execute("DELETE FROM lixeira")
+
+    # Seleciona tudo da lixeira
+    cur.execute("SELECT id, tabela, dados FROM lixeira")
+    itens = cur.fetchall()
+
+    if not itens:
+        print("Lixeira vazia. Nada para restaurar.")
+        pausa(2)
+        return
+
+    for item in itens:
+        lixo_id, tabela, dados_json = item
+
+        # Converte o JSON para dict
+        dados = json.loads(dados_json)
+
+        # Monta SQL dinamicamente
+        colunas = ", ".join(dados.keys())
+        placeholders = ", ".join(["?"] * len(dados))
+        valores = tuple(dados.values())
+
+        sql_insert = f"INSERT INTO {tabela} ({colunas}) VALUES ({placeholders})"
+
+        try:
+            cur.execute(sql_insert, valores)
+            # Remove o item restaurado da lixeira
+            cur.execute("DELETE FROM lixeira WHERE id = ?", (lixo_id,))
+        except Exception as e:
+            print(f"Erro ao restaurar item {lixo_id}: {e}")
+
     con.commit()
     con.close()
+    print("Itens restaurados com sucesso!")
+    pausa(2)
+
 
 
 def apagar_lixeira():
@@ -81,6 +113,16 @@ def apagar_lixeira():
     cur.execute("DELETE FROM lixeira")
     con.commit()
     con.close()
+    
+def ver_lixeira():
+    con = conectar()
+    try:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM lixeira")
+        itens = cur.fetchall()
+        return itens
+    finally:
+        con.close()
 
 
 def restaurar_sistema():
@@ -98,25 +140,31 @@ def menu_lixeira():
     while True:
         limpar_tela()
         print("=== MENU LIXEIRA ===")
-        print("1. Mostra lixeira")
-        print("2. Mover para lixeira")
-        print("3. Restaurar itens da lixeira")
-        print("4. Apagar itens da lixeira permanentemente.")
+        print("1. Ver lixeira.")
+        print("2. Restaurar itens da lixeira.")
+        print("3. Apagar itens da lixeira permanentemente.")
         print("0. Sair")
 
         opc = input("Opção: ").strip()
 
         if opc == "1":
-            print("Em desenvolvimento!")
+            itens = ver_lixeira()
+            if not itens:
+                print("Lixeira vazia.")
+            else:
+                print("\n=== ITENS NA LIXEIRA ===")
+                for item in itens:
+                    print(item)
+            input("\nPressione Enter para continuar...")
         elif opc == "2":
-            mover_para_lixeira()
+            restaurar_item_lixeira()
         elif opc == "3":
-            restaurar_lixeira()
-        elif opc == "4":
             apagar_lixeira()
+            print("Itens apagados permanentemente.")
+            pausa(2)
         elif opc == "0":
             pausa(1)
             break
         else:
             print("Opção inválida!")
-            pausa(1)
+            pausa(2)
