@@ -5,12 +5,12 @@ def menu_viaturas():
     while True:
         limpar_tela()
         print("=== VIATURAS ===")
-        print("1. Cadastrar")
+        print("\n1. Cadastrar")
         print("2. Listar")
         print("3. Apagar")
         print("0. Voltar")
 
-        opc = input("Opção: ")
+        opc = input("\nOpção: ")
 
         if opc == "1":
             cadastrar()
@@ -55,7 +55,7 @@ def listar():
         print(row)
 
     con.close()
-    pausa(3)
+    pausa(2)
 
 
 def apagar():

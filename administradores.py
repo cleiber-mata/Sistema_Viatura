@@ -1,5 +1,6 @@
 from database import conectar, menu_lixeira, restaurar_sistema
 from uteis import pausa, limpar_tela
+from requisitos_funcionalidades import mostrar_requisitos
 
 def cadastrar_administrador():
     limpar_tela()
@@ -68,6 +69,7 @@ def menu_admins():
         print("2. Restaurar Sistema")
         print("3. Restart Sistema.")
         print("4. Lixeira")
+        print("9. Requisitos e Funcionalidades.")
         print("0. Sair")
 
         opc = input("Opção: ").strip()
@@ -80,6 +82,8 @@ def menu_admins():
             print("Em desenvolvimento!")
         elif opc == "4":
             menu_lixeira()
+        elif opc == "9":
+            mostrar_requisitos()
         elif opc == "0":
             break
         else:

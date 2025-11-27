@@ -1,3 +1,68 @@
+import tkinter as tk
+from tkinter import scrolledtext
+
+def mostrar_requisitos():
+    texto = """
+    ============================================================
+    SISTEMA DE GERENCIAMENTO DE VIATURAS, POLICIAIS E ADMINISTRADORES
+    ============================================================
+
+    DOCUMENTAÇÃO DE REQUISITOS E FUNCIONALIDADES DO SISTEMA
+
+    O sistema gerencia administradores, policiais e viaturas, mantendo tudo registrado em banco de dados e acessado por menus no terminal.
+
+1. Acesso ao sistema
+O uso completo exige login de administrador. Cada administrador tem nome, login, senha e dados funcionais. O ID é criado automaticamente.
+
+2. Policiais
+Permite cadastrar policiais com nome de guerra, matrícula, telefone, patente, companhia e batalhão.
+Todos os dados ficam listáveis em tela.
+
+3. Viaturas
+Cadastro de viaturas com prefixo, placa, tipo (Moto ou 4 Rodas), KM, OS Prime, última revisão, contato da oficina, observações e responsável.
+O sistema identifica automaticamente viaturas disponíveis (sem OS) e baixadas (com OS).
+Também permite listar, buscar por prefixo, buscar por OS e gerar relatório.
+
+4. Lixeira (Recuperação de dados)
+Itens excluídos podem ir para a lixeira e ser restaurados depois.
+A lixeira também pode ser esvaziada.
+
+5. Backup
+É possível criar backup da pasta de dados a qualquer momento.
+
+6. Estrutura do menu
+O menu principal reúne:
+– cadastro e listagem de viaturas
+– pesquisa por prefixo ou OS
+– relatório geral
+– cadastro e listagem de policiais
+– listagem de administradores
+– criação de backup
+– acesso à lixeira
+– retorno ao menu inicial ou saída
+
+7. Regras e validações
+Prefixo, placa e login não podem repetir.
+Telefones precisam ter 11 dígitos.
+Datas de criação são automáticas.
+Tipos de viatura só podem ser Moto ou 4 Rodas.)
+    """
+
+    # Cria a janela
+    janela = tk.Tk()
+    janela.title("Requisitos do Sistema")
+    janela.geometry("950x700")
+
+    # Área de texto com barra de rolagem
+    caixa = scrolledtext.ScrolledText(janela, wrap=tk.WORD, font=("Consolas", 11))
+    caixa.pack(expand=True, fill="both")
+
+    caixa.insert(tk.END, texto)
+    caixa.config(state="disabled")  # impede edição
+
+    janela.mainloop()
+
+
 """
 ============================================================
 SISTEMA DE GERENCIAMENTO DE VIATURAS, POLICIAIS E ADMINISTRADORES
