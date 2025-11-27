@@ -3,50 +3,36 @@ from tkinter import scrolledtext
 
 def mostrar_requisitos():
     texto = """
-    ============================================================
     SISTEMA DE GERENCIAMENTO DE VIATURAS, POLICIAIS E ADMINISTRADORES
-    ============================================================
 
-    DOCUMENTAÇÃO DE REQUISITOS E FUNCIONALIDADES DO SISTEMA
+Este sistema gerencia administradores, policiais e viaturas por meio de menus no terminal e registros em banco de dados.
 
-    O sistema gerencia administradores, policiais e viaturas, mantendo tudo registrado em banco de dados e acessado por menus no terminal.
+ACESSO AO SISTEMA
+Administradores possuem login, senha e dados funcionais. O login dá acesso ao menu principal. IDs são gerados automaticamente.
 
-1. Acesso ao sistema
-O uso completo exige login de administrador. Cada administrador tem nome, login, senha e dados funcionais. O ID é criado automaticamente.
+POLICIAIS
+Permite cadastrar policiais com nome de guerra, matrícula, telefone, patente, companhia e batalhão. Os dados podem ser listados.
 
-2. Policiais
-Permite cadastrar policiais com nome de guerra, matrícula, telefone, patente, companhia e batalhão.
-Todos os dados ficam listáveis em tela.
+VIATURAS
+Cadastro de viaturas com prefixo, placa, tipo (Moto ou 4 Rodas), KM, OS Prime, última revisão, telefone da oficina, observações e responsável.
+O sistema identifica automaticamente viaturas baixadas (com OS Prime) e disponíveis (sem OS).
+Também permite listar, pesquisar por prefixo, pesquisar por OS e gerar relatório geral.
 
-3. Viaturas
-Cadastro de viaturas com prefixo, placa, tipo (Moto ou 4 Rodas), KM, OS Prime, última revisão, contato da oficina, observações e responsável.
-O sistema identifica automaticamente viaturas disponíveis (sem OS) e baixadas (com OS).
-Também permite listar, buscar por prefixo, buscar por OS e gerar relatório.
+LIXEIRA
+Itens removidos podem ser enviados para a lixeira. É possível restaurar ou excluir definitivamente.
 
-4. Lixeira (Recuperação de dados)
-Itens excluídos podem ir para a lixeira e ser restaurados depois.
-A lixeira também pode ser esvaziada.
+BACKUP
+Permite criar um backup completo da pasta de dados.
 
-5. Backup
-É possível criar backup da pasta de dados a qualquer momento.
+MENU PRINCIPAL
+Inclui cadastros, listagens, pesquisas, relatório, backup, acesso à lixeira, retorno ao menu inicial e saída.
 
-6. Estrutura do menu
-O menu principal reúne:
-– cadastro e listagem de viaturas
-– pesquisa por prefixo ou OS
-– relatório geral
-– cadastro e listagem de policiais
-– listagem de administradores
-– criação de backup
-– acesso à lixeira
-– retorno ao menu inicial ou saída
-
-7. Regras e validações
-Prefixo, placa e login não podem repetir.
-Telefones precisam ter 11 dígitos.
-Datas de criação são automáticas.
-Tipos de viatura só podem ser Moto ou 4 Rodas.)
-    """
+VALIDAÇÕES
+Prefixo, placa e login não podem se repetir.
+Telefone deve ter 11 dígitos.
+Tipos de viatura são apenas Moto ou 4 Rodas.
+Datas de criação são geradas automaticamente.
+"""
 
     # Cria a janela
     janela = tk.Tk()
