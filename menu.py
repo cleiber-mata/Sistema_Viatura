@@ -33,7 +33,7 @@ def menu_principal():
         print("1. Viaturas")
         print("2. Policiais")
         print("3. Administradores")
-        print("0. Sair")
+        print("0. Voltar menu anterior.")
 
         opc = input("Opção: ").strip()
 

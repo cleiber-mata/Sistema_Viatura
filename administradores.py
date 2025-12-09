@@ -6,7 +6,8 @@ def cadastrar_administrador():
     limpar_tela()
     print("=== CADASTRAR ADMINISTRADOR ===")
 
-    nome = input("Nome: ").strip().lower()
+    nome_completo = input("Nome Completo: ").strip().lower()
+    nome = input("Primeiro Nome: ").strip().lower()
     sobrenome = input("Sobrenome: ").strip().lower()
     login = f"{nome}.{sobrenome}"
 
@@ -25,8 +26,8 @@ def cadastrar_administrador():
     cur = con.cursor()
 
     try:
-        cur.execute("INSERT INTO administradores (nome, sobrenome, login, senha) VALUES (?, ?, ?, ?)",
-                    (nome, sobrenome, login, senha))
+        cur.execute("INSERT INTO administradores (nome_completo, nome, sobrenome, login, senha) VALUES (?, ?, ?, ?, ?)",
+                    (nome_completo, nome, sobrenome, login, senha))
         con.commit()
         print(f"Administrador criado com login: {login}")
     except:
@@ -41,13 +42,13 @@ def login():
     limpar_tela()
     print("=== LOGIN ===")
 
-    login = input("Login: ").strip().lower()
-    senha = input("Senha: ").strip()
+    login_dig = input("Login: ").strip().lower()
+    senha_dig = input("Senha: ").strip()
 
     con = conectar()
     cur = con.cursor()
 
-    cur.execute("SELECT id FROM administradores WHERE login=? AND senha=?", (login, senha))
+    cur.execute("SELECT id FROM administradores WHERE login=? AND senha=?", (login_dig, senha_dig))
     r = cur.fetchone()
     con.close()
 
@@ -70,16 +71,19 @@ def menu_admins():
         print("3. Restart Sistema.")
         print("4. Lixeira")
         print("9. Requisitos e Funcionalidades.")
-        print("0. Sair")
+        print("0. Voltar")
 
         opc = input("Opção: ").strip()
 
         if opc == "1":
             print("Em desenvolvimento!")
+            pausa(1)
         elif opc == "2":
-            restaurar_sistema
+            restaurar_sistema()
+            pausa(1)
         elif opc == "3":
             print("Em desenvolvimento!")
+            pausa(1)
         elif opc == "4":
             menu_lixeira()
         elif opc == "9":
