@@ -13,7 +13,7 @@ def menu_inicial():
         print("2. Login")
         print("0. Sair")
 
-        opc = input("Opção: ").strip()
+        opc = input("\nOpção: ").strip()
 
         if opc == "1":
             cadastrar_administrador()
